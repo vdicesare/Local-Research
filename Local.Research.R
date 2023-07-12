@@ -114,6 +114,4 @@ df.journals.max.refs <- df.journals.max.refs %>% rename("refs.max.country" = "co
 df.journals.max.refs <- select(df.journals.max.refs, -c(pubs, cits, pubs.n, cits.n, pubs.prop, cits.prop, pubs.gini, cits.gini, pubs.country.n, cits.country.n))
 
 # merge all dataframes with cits, pubs and refs max values
-df.journals.max <- merge(merge(df.journals.max.cits, df.journals.max.pubs, by = "journal.id", all = TRUE), df.journals.max.refs, by = "journal.id", all = TRUE)
-df.journals.max <- select(df.journals.max, -c(journal.name.y, journal.name))
-df.journals.max <- df.journals.max %>% rename("journal.name" = "journal.name.x")
+df.journals.max <- merge(merge(df.journals.max.cits, df.journals.max.pubs, by = c("journal.id", "journal.name"), all = TRUE), df.journals.max.refs, by = c("journal.id", "journal.name"), all = TRUE)
