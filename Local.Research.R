@@ -69,23 +69,37 @@ names(gini.refs)[2] <- "refs.gini"
 df.journals.wide <- merge(df.journals.wide, gini.refs, by = "journal.id", all.x = TRUE)
 df.journals.wide$refs.gini[is.nan(df.journals.wide$refs.gini)] <- 0
 
-
 # count total countries per journal's cits, pubs and refs
 df.journals.wide <- df.journals.wide %>%
                       group_by(journal.id) %>%
-                      mutate(cits.country.n = count(country, na.rm = TRUE))
-
-
-# subset journals to keep only the countries with max cits, pubs and refs
-df.journals.max <- df.journals.wide %>%
-                    group_by(journal.id) %>%
-                    filter(cits == max(cits, na.rm = TRUE) |
-                      pubs == max(pubs, na.rm = TRUE) |
-                      refs == max(refs, na.rm = TRUE)) %>%
+                      mutate(cits.country.n = n_distinct(country[!is.na(cits)])) %>%
                     ungroup()
 
+df.journals.wide <- df.journals.wide %>%
+                      group_by(journal.id) %>%
+                      mutate(pubs.country.n = n_distinct(country[!is.na(pubs)])) %>%
+                    ungroup()
+
+df.journals.wide <- df.journals.wide %>%
+                      group_by(journal.id) %>%
+                      mutate(refs.country.n = n_distinct(country[!is.na(refs)])) %>%
+                    ungroup()
+
+
+  
+
+
+##
+# subset journals to keep only the countries with max cits, pubs and refs
+#df.journals.max <- df.journals.wide %>%
+ #                   group_by(journal.id) %>%
+  #                  filter(cits == max(cits, na.rm = TRUE) |
+   #                   pubs == max(pubs, na.rm = TRUE) |
+    #                  refs == max(refs, na.rm = TRUE)) %>%
+     #               ungroup()
+
 # filter cits per journal to obtain the countries with max values
-df.journals.max.cits <- df.journals.max %>%
+df.journals.max.cits <- df.journals.wide %>%
                           group_by(journal.id) %>%
                           filter(cits == max(cits, na.rm = TRUE)) %>%
                         ungroup()
