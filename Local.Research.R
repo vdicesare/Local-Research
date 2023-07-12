@@ -115,3 +115,4 @@ df.journals.max.refs <- select(df.journals.max.refs, -c(pubs, cits, pubs.n, cits
 
 # merge all dataframes with cits, pubs and refs max values
 df.journals.max <- merge(merge(df.journals.max.cits, df.journals.max.pubs, by = c("journal.id", "journal.name"), all = TRUE), df.journals.max.refs, by = c("journal.id", "journal.name"), all = TRUE)
+write.csv2(df.journals.max, file = "~/Desktop/Local.Research/dataset_journals_max.csv")
