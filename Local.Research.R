@@ -42,16 +42,19 @@ df.journals.wide <- df.journals.wide %>%
                       group_by(journal.id) %>%
                       mutate(cits.prop = cits / cits.n)
 df.journals.wide$cits.prop <- sprintf("%.7f", df.journals.wide$cits.prop)
+df.journals.wide$cits.prop <- as.numeric(df.journals.wide$cits.prop)
 
 df.journals.wide <- df.journals.wide %>%
                       group_by(journal.id) %>%
                       mutate(pubs.prop = pubs / pubs.n)
 df.journals.wide$pubs.prop <- sprintf("%.7f", df.journals.wide$pubs.prop)
+df.journals.wide$pubs.prop <- as.numeric(df.journals.wide$pubs.prop)
 
 df.journals.wide <- df.journals.wide %>%
                       group_by(journal.id) %>%
                       mutate(refs.prop = refs / refs.n)
 df.journals.wide$refs.prop <- sprintf("%.7f", df.journals.wide$refs.prop)
+df.journals.wide$refs.prop <- as.numeric(df.journals.wide$refs.prop)
 
 # compute Gini coefficient per journals' pubs, refs and cits
 gini.cits <- aggregate(cits ~ journal.id, df.journals.wide, FUN = Gini)
@@ -116,3 +119,30 @@ df.journals.max.refs <- select(df.journals.max.refs, -c(pubs, cits, pubs.n, cits
 # merge all dataframes with cits, pubs and refs max values
 df.journals.max <- merge(merge(df.journals.max.cits, df.journals.max.pubs, by = c("journal.id", "journal.name"), all = TRUE), df.journals.max.refs, by = c("journal.id", "journal.name"), all = TRUE)
 write.csv2(df.journals.max, file = "~/Desktop/Local.Research/dataset_journals_max.csv")
+
+##
+# Figure 1. Plot histogram with gini distribution per cits, pubs and refs
+df.figure1 <- subset(df.journals.max, select = c("journal.id", "cits.gini", "pubs.gini", "refs.gini"))
+colnames(df.figure1) <- c("journal.id", "cits","pubs", "refs")
+df.figure1 <- pivot_longer(df.figure1, cits:pubs:refs, names_to = "cits.pubs.refs", values_to = "gini.coefficient")
+
+ggplot(df.figure1) +
+  geom_histogram(aes(x = gini.coefficient, color = cits.pubs.refs, fill = cits.pubs.refs), position = 'identity', alpha=0.6) +
+  theme_minimal() +
+  facet_wrap(~cits.pubs.refs) +
+  xlab("Gini Coefficient") +
+  ylab("Count")
+ggsave("~/Desktop/Local.Research/Figure1.jpg")
+
+# Figure 2. Plot scatterplot of ginis per max countries proportion
+df.figure2 <- subset(df.journals.max, select = c("journal.id", "cits.prop", "pubs.prop", "refs.prop"))
+colnames(df.figure2) <- c("journal.id", "cits","pubs", "refs")
+df.figure2 <- pivot_longer(df.figure2, cits:pubs:refs, names_to = "cits.pubs.refs", values_to = "proportion")
+df.figure2 <- merge(x = df.figure2, y = df.figure1, by = c("journal.id","cits.pubs.refs"), all = TRUE)
+
+ggplot(df.figure2) + 
+  geom_point(aes(x = gini.coefficient, y = proportion, color = cits.pubs.refs, fill = cits.pubs.refs), alpha=0.6) +
+  theme_minimal() +
+  xlab("Gini Coefficient") +
+  ylab("Proportion of countries' max cits/pubs/refs")
+ggsave("~/Desktop/Local.Research/Figure2.jpg")
