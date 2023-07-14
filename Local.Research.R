@@ -181,12 +181,22 @@ df.table1 <- filter(df.figure2, cits.pubs.refs == "cits" & cits.pubs.refs == "pu
 
 # Table 1A. Filter journals with only one country per cits
 df.table1A <- filter(df.figure2, cits.pubs.refs == "cits" & country.n == 1)
+df.table1A <- merge(x = df.table1A, y = df.journals.wide[,c("journal.id", "journal.name")], by = "journal.id")
+df.table1A <- df.table1A %>% distinct()
 write.csv2(df.table1A, file = "~/Desktop/Local.Research/Table1A.csv")
 
 # Table 1B. Filter journals with only one country per pubs
 df.table1B <- filter(df.figure2, cits.pubs.refs == "pubs" & country.n == 1)
+df.table1B <- merge(x = df.table1B, y = df.journals.wide[,c("journal.id", "journal.name")], by = "journal.id")
+df.table1B <- df.table1B %>% distinct()
 write.csv2(df.table1B, file = "~/Desktop/Local.Research/Table1B.csv")
 
 # Table 1C. Filter journals with only one country per refs
 df.table1C <- filter(df.figure2, cits.pubs.refs == "refs" & country.n == 1)
+df.table1C <- merge(x = df.table1C, y = df.journals.wide[,c("journal.id", "journal.name")], by = "journal.id")
+df.table1C <- df.table1C %>% distinct()
 write.csv2(df.table1C, file = "~/Desktop/Local.Research/Table1C.csv")
+
+
+
+
