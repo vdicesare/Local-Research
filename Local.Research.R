@@ -176,9 +176,6 @@ ggplot(df.figure2C) +
   ylab("Country count per journal")
 ggsave("~/Desktop/Local.Research/Figure2C.jpg")
 
-# Table 1. Filter journals with only one country per cits, pubs and refs in the same case
-df.table1 <- filter(df.figure2, cits.pubs.refs == "cits" & cits.pubs.refs == "pubs" & cits.pubs.refs == "refs" & country.n == 1)
-
 # Table 1A. Filter journals with only one country per cits
 df.table1A <- filter(df.figure2, cits.pubs.refs == "cits" & country.n == 1)
 df.table1A <- merge(x = df.table1A, y = df.journals.wide[,c("journal.id", "journal.name")], by = "journal.id")
@@ -197,6 +194,22 @@ df.table1C <- merge(x = df.table1C, y = df.journals.wide[,c("journal.id", "journ
 df.table1C <- df.table1C %>% distinct()
 write.csv2(df.table1C, file = "~/Desktop/Local.Research/Table1C.csv")
 
+# Table 1. Filter journals with only one country per cits, pubs and refs in the same case
+df.table1 <- merge(merge(df.table1A[,c("journal.id", "journal.name", "country.n")], df.table1B[,c("journal.id", "journal.name", "country.n")], by = c("journal.id", "journal.name")), df.table1C[,c("journal.id", "journal.name", "country.n")], by = c("journal.id", "journal.name"))
+colnames(df.table1) <- c("journal.id", "journal.name", "cits.country.n","pubs.country.n", "refs.country.n")
+write.csv2(df.table1, file = "~/Desktop/Local.Research/Table1.csv")
 
+# Table 2. Find same max country between cits and pubs per journal
+df.table2 <- merge(x = df.journals.max.cits[,c("journal.id", "journal.name", "cits.max.country")], y = df.journals.max.pubs[,c("journal.id", "journal.name", "pubs.max.country")], by = c("journal.id", "journal.name"))
+df.table2 <- filter(df.table2, cits.max.country == pubs.max.country)
+write.csv2(df.table2, file = "~/Desktop/Local.Research/Table2.csv")
 
+# Table 3. Find same max country between refs and pubs per journal
+df.table3 <- merge(x = df.journals.max.refs[,c("journal.id", "journal.name", "refs.max.country")], y = df.journals.max.pubs[,c("journal.id", "journal.name", "pubs.max.country")], by = c("journal.id", "journal.name"))
+df.table3 <- filter(df.table3, refs.max.country == pubs.max.country)
+write.csv2(df.table3, file = "~/Desktop/Local.Research/Table3.csv")
 
+# Table 4. Find same max country between cits, pubs and refs per journal
+df.table4 <- merge(merge(df.journals.max.cits[,c("journal.id", "journal.name", "cits.max.country")], df.journals.max.pubs[,c("journal.id", "journal.name", "pubs.max.country")], by = c("journal.id", "journal.name")), df.journals.max.refs[,c("journal.id", "journal.name", "refs.max.country")], by = c("journal.id", "journal.name"))
+df.table4 <- filter(df.table4, (cits.max.country == pubs.max.country) & (pubs.max.country == refs.max.country))
+write.csv2(df.table4, file = "~/Desktop/Local.Research/Table4.csv")
