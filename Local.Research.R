@@ -175,3 +175,18 @@ ggplot(df.figure2C) +
   xlab("Gini Coefficient") +
   ylab("Country count per journal")
 ggsave("~/Desktop/Local.Research/Figure2C.jpg")
+
+# Table 1. Filter journals with only one country per cits, pubs and refs in the same case
+df.table1 <- filter(df.figure2, cits.pubs.refs == "cits" & cits.pubs.refs == "pubs" & cits.pubs.refs == "refs" & country.n == 1)
+
+# Table 1A. Filter journals with only one country per cits
+df.table1A <- filter(df.figure2, cits.pubs.refs == "cits" & country.n == 1)
+write.csv2(df.table1A, file = "~/Desktop/Local.Research/Table1A.csv")
+
+# Table 1B. Filter journals with only one country per pubs
+df.table1B <- filter(df.figure2, cits.pubs.refs == "pubs" & country.n == 1)
+write.csv2(df.table1B, file = "~/Desktop/Local.Research/Table1B.csv")
+
+# Table 1C. Filter journals with only one country per refs
+df.table1C <- filter(df.figure2, cits.pubs.refs == "refs" & country.n == 1)
+write.csv2(df.table1C, file = "~/Desktop/Local.Research/Table1C.csv")
