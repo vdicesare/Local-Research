@@ -135,15 +135,43 @@ ggplot(df.figure1) +
   ylab("Journal count")
 ggsave("~/Desktop/Local.Research/Figure1.jpg")
 
-# Figure 2. Plot scatterplot of ginis per max countries proportion
-df.figure2 <- subset(df.journals.max, select = c("journal.id", "cits.prop", "pubs.prop", "refs.prop"))
+# Figure 2. Plot scatterplot of Gini Coefficient per number of countries in each journal per cits, pubs and refs
+df.figure2 <- subset(df.journals.wide, select = c("journal.id", "cits.country.n", "pubs.country.n", "refs.country.n"))
 colnames(df.figure2) <- c("journal.id", "cits","pubs", "refs")
-df.figure2 <- pivot_longer(df.figure2, cits:pubs:refs, names_to = "cits.pubs.refs", values_to = "proportion")
+df.figure2 <- pivot_longer(df.figure2, cits:pubs:refs, names_to = "cits.pubs.refs", values_to = "country.n")
 df.figure2 <- merge(x = df.figure2, y = df.figure1, by = c("journal.id","cits.pubs.refs"), all = TRUE)
+df.figure2 <- df.figure2 %>% distinct()
 
 ggplot(df.figure2) + 
-  geom_point(aes(x = gini.coefficient, y = proportion, color = cits.pubs.refs, fill = cits.pubs.refs), alpha=0.6) +
+  geom_point(aes(x = gini.coefficient, y = country.n, color = cits.pubs.refs, fill = cits.pubs.refs), alpha=0.6) +
   theme_minimal() +
   xlab("Gini Coefficient") +
-  ylab("Proportion of countries' max cits/pubs/refs")
+  ylab("Country count per journal")
 ggsave("~/Desktop/Local.Research/Figure2.jpg")
+
+# Figure 2A. Plot scatterplot of Gini Coefficient per number of countries in each journal per cits
+df.figure2A <- filter(df.figure2, cits.pubs.refs == "cits")
+ggplot(df.figure2A) + 
+  geom_point(aes(x = gini.coefficient, y = country.n), color = "red", alpha=0.6) +
+  theme_minimal() +
+  xlab("Gini Coefficient") +
+  ylab("Country count per journal")
+ggsave("~/Desktop/Local.Research/Figure2A.jpg")
+
+# Figure 2B. Plot scatterplot of Gini Coefficient per number of countries in each journal per pubs
+df.figure2B <- filter(df.figure2, cits.pubs.refs == "pubs")
+ggplot(df.figure2B) + 
+  geom_point(aes(x = gini.coefficient, y = country.n), color = "lightgreen", alpha=0.6) +
+  theme_minimal() +
+  xlab("Gini Coefficient") +
+  ylab("Country count per journal")
+ggsave("~/Desktop/Local.Research/Figure2B.jpg")
+
+# Figure 2C. Plot scatterplot of Gini Coefficient per number of countries in each journal per refs
+df.figure2C <- filter(df.figure2, cits.pubs.refs == "refs")
+ggplot(df.figure2C) + 
+  geom_point(aes(x = gini.coefficient, y = country.n), color = "lightblue", alpha=0.6) +
+  theme_minimal() +
+  xlab("Gini Coefficient") +
+  ylab("Country count per journal")
+ggsave("~/Desktop/Local.Research/Figure2C.jpg")
