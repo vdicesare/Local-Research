@@ -3,11 +3,17 @@ library(dplyr)
 library(DescTools)
 library(reshape2)
 library(ggplot2)
+library(corrplot)
 #library(treemap)
 #library(networkD3)
 
 # read Dimensions file
 df <- read.csv2("~/Desktop/Local.Research/dataset_journals.csv", col.names = c("pubs.refs.cits", "source.type", "journal.id", "journal.name", "issn", "eissn", "publisher", "country", "count"))
+
+# read file with pubs totals per journal
+pubs.totals <- read.csv2("~/Desktop/Local.Research/journals_total.csv")
+pubs.totals <- subset(pubs.totals, pubs.totals$source_type == "Journal", select = c("source_id", "pubs"))
+colnames(pubs.totals) <- c("journal.id","pubs.n")
 
 # subset journals source type
 df.journals <- subset(df, df$source.type == "Journal", select = c("pubs.refs.cits", "journal.id", "journal.name", "issn", "eissn", "publisher", "country", "count"))
@@ -23,38 +29,6 @@ df.journals.aggr <- df.journals %>% group_by(journal.id, journal.name, country, 
 ##
 # reshape to wide format in order to work individually with the variables pubs, refs and cits
 df.journals.wide <- dcast(df.journals.aggr, journal.id + journal.name + country ~ pubs.refs.cits)
-
-# sum total cits, pubs and refs per journal
-df.journals.wide <- df.journals.wide %>%
-                      group_by(journal.id) %>%
-                      mutate(cits.n = sum(cits, na.rm = TRUE))
-
-df.journals.wide <- df.journals.wide %>%
-                      group_by(journal.id) %>%
-                      mutate(pubs.n = sum(pubs, na.rm = TRUE))
-
-df.journals.wide <- df.journals.wide %>%
-                      group_by(journal.id) %>%
-                      mutate(refs.n = sum(refs, na.rm = TRUE))
-
-# compute proportions per journals' pubs, refs and cits
-df.journals.wide <- df.journals.wide %>%
-                      group_by(journal.id) %>%
-                      mutate(cits.prop = cits / cits.n)
-df.journals.wide$cits.prop <- sprintf("%.7f", df.journals.wide$cits.prop)
-df.journals.wide$cits.prop <- as.numeric(df.journals.wide$cits.prop)
-
-df.journals.wide <- df.journals.wide %>%
-                      group_by(journal.id) %>%
-                      mutate(pubs.prop = pubs / pubs.n)
-df.journals.wide$pubs.prop <- sprintf("%.7f", df.journals.wide$pubs.prop)
-df.journals.wide$pubs.prop <- as.numeric(df.journals.wide$pubs.prop)
-
-df.journals.wide <- df.journals.wide %>%
-                      group_by(journal.id) %>%
-                      mutate(refs.prop = refs / refs.n)
-df.journals.wide$refs.prop <- sprintf("%.7f", df.journals.wide$refs.prop)
-df.journals.wide$refs.prop <- as.numeric(df.journals.wide$refs.prop)
 
 # compute Gini coefficient per journals' pubs, refs and cits
 gini.cits <- aggregate(cits ~ journal.id, df.journals.wide, FUN = Gini)
@@ -197,6 +171,7 @@ write.csv2(df.table1C, file = "~/Desktop/Local.Research/Table1C.csv")
 # Table 1. Filter journals with only one country per cits, pubs and refs in the same case
 df.table1 <- merge(merge(df.table1A[,c("journal.id", "journal.name", "country.n")], df.table1B[,c("journal.id", "journal.name", "country.n")], by = c("journal.id", "journal.name")), df.table1C[,c("journal.id", "journal.name", "country.n")], by = c("journal.id", "journal.name"))
 colnames(df.table1) <- c("journal.id", "journal.name", "cits.country.n","pubs.country.n", "refs.country.n")
+df.table1 <- merge(df.table1, df.journals.max[,c("journal.id", "cits.max.country", "pubs.max.country", "refs.max.country")], by = c("journal.id"))
 write.csv2(df.table1, file = "~/Desktop/Local.Research/Table1.csv")
 
 # Table 2. Find same max country between cits and pubs per journal
@@ -213,3 +188,11 @@ write.csv2(df.table3, file = "~/Desktop/Local.Research/Table3.csv")
 df.table4 <- merge(merge(df.journals.max.cits[,c("journal.id", "journal.name", "cits.max.country")], df.journals.max.pubs[,c("journal.id", "journal.name", "pubs.max.country")], by = c("journal.id", "journal.name")), df.journals.max.refs[,c("journal.id", "journal.name", "refs.max.country")], by = c("journal.id", "journal.name"))
 df.table4 <- filter(df.table4, (cits.max.country == pubs.max.country) & (pubs.max.country == refs.max.country))
 write.csv2(df.table4, file = "~/Desktop/Local.Research/Table4.csv")
+
+# Figure 3. Correlogram (dataframe = journal.id, journal.name, pubs.n, refs.n, cits.n, pubs.gini, refs.gini, cits.gini, pubs.country.n, refs.country.n, cits.country.n)
+df.figure3 <- subset(df.journals.wide, select = c("journal.id", "journal.name", "pubs.gini", "refs.gini", "cits.gini", "pubs.country.n", "refs.country.n", "cits.country.n"))
+df.figure3 <- df.figure3 %>% distinct()  
+df.figure3 <- merge(x = df.figure3, y = pubs.totals, by = "journal.id")
+
+corr.matrix <- cor(df.figure3[,c("pubs.n", "pubs.gini", "refs.gini", "cits.gini", "pubs.country.n", "refs.country.n", "cits.country.n")])
+#obviar NAs
