@@ -136,29 +136,29 @@ ggplot(df.figure2) +
 # Figure 2A. Plot scatterplot of Gini Coefficient per number of countries in each journal per cits
 df.figure2A <- filter(df.figure2, cits.pubs.refs == "cits")
 ggplot(df.figure2A) + 
-  geom_point(aes(x = gini.coefficient, y = country.n), color = "red", alpha=0.6) +
+  geom_point(aes(x = gini.coefficient, y = country.n), color = "red", alpha=0.3) +
   theme_minimal() +
   xlab("Gini Coefficient") +
   ylab("Country count per journal")
-#ggsave("~/Desktop/Local.Research/Figure2A.jpg")
+ggsave("~/Desktop/Local.Research/Figure2A.jpg")
 
 # Figure 2B. Plot scatterplot of Gini Coefficient per number of countries in each journal per pubs
 df.figure2B <- filter(df.figure2, cits.pubs.refs == "pubs")
 ggplot(df.figure2B) + 
-  geom_point(aes(x = gini.coefficient, y = country.n), color = "lightgreen", alpha=0.6) +
+  geom_point(aes(x = gini.coefficient, y = country.n), color = "green", alpha=0.3) +
   theme_minimal() +
   xlab("Gini Coefficient") +
   ylab("Country count per journal")
-#ggsave("~/Desktop/Local.Research/Figure2B.jpg")
+ggsave("~/Desktop/Local.Research/Figure2B.jpg")
 
 # Figure 2C. Plot scatterplot of Gini Coefficient per number of countries in each journal per refs
 df.figure2C <- filter(df.figure2, cits.pubs.refs == "refs")
 ggplot(df.figure2C) + 
-  geom_point(aes(x = gini.coefficient, y = country.n), color = "lightblue", alpha=0.6) +
+  geom_point(aes(x = gini.coefficient, y = country.n), color = "blue", alpha=0.3) +
   theme_minimal() +
   xlab("Gini Coefficient") +
   ylab("Country count per journal")
-#ggsave("~/Desktop/Local.Research/Figure2C.jpg")
+ggsave("~/Desktop/Local.Research/Figure2C.jpg")
 
 ##
 # Table 1A. Filter journals with only one country per cits
@@ -294,3 +294,51 @@ df.figure3 <- merge(merge(df.figure3, pubs.totals, by = "journal.id"), refs.tota
 
 corr.matrix <- cor(df.figure3[,c("pubs.n", "refs.n", "pubs.gini", "refs.gini", "cits.gini", "pubs.country.n", "refs.country.n", "cits.country.n")], use = "complete.obs")
 corrplot(corr.matrix, method = "number")
+
+# Figure 4. Plot histogram of cits Gini Coefficient per journals' number of countries
+df.figure4 <- subset(df.journals.wide, select = c("journal.id", "cits.gini", "cits.country.n"))
+df.figure4 <- df.figure4 %>% distinct()
+
+ggplot(df.figure4) +
+  geom_histogram(aes(x = cits.gini), position = 'identity', color = "red", fill = "red", alpha=0.6) +
+  theme_minimal() +
+  xlab("Gini Coefficient") +
+  ylab("Country count")
+ggsave("~/Desktop/Local.Research/Figure4.jpg")
+
+# Figure 4A. Plot histogram of pubs Gini Coefficient per journals' number of countries
+df.figure4A <- subset(df.journals.wide, select = c("journal.id", "pubs.gini", "pubs.country.n"))
+df.figure4A <- df.figure4A %>% distinct()
+
+ggplot(df.figure4A) +
+  geom_histogram(aes(x = pubs.gini), position = 'identity', color = "green", fill = "green", alpha=0.6) +
+  theme_minimal() +
+  xlab("Gini Coefficient") +
+  ylab("Country count")
+ggsave("~/Desktop/Local.Research/Figure4A.jpg")
+
+# Figure 4B. Plot histogram of refs Gini Coefficient per journals' number of countries
+df.figure4B <- subset(df.journals.wide, select = c("journal.id", "refs.gini", "refs.country.n"))
+df.figure4B <- df.figure4B %>% distinct()
+
+ggplot(df.figure4B) +
+  geom_histogram(aes(x = refs.gini), position = 'identity', color = "blue", fill = "blue", alpha=0.6) +
+  theme_minimal() +
+  xlab("Gini Coefficient") +
+  ylab("Country count")
+ggsave("~/Desktop/Local.Research/Figure4B.jpg")
+
+# Figure 5. Plot histogram of journals per number of countries' cits, pubs and refs
+df.figure5 <- subset(df.journals.wide, select = c("journal.id", "cits.country.n", "pubs.country.n", "refs.country.n"))
+df.figure5 <- df.figure5 %>% distinct()
+colnames(df.figure5) <- c("journal.id", "cits","pubs", "refs")
+df.figure5 <- pivot_longer(df.figure5, cits:pubs:refs, names_to = "cits.pubs.refs", values_to = "country.n")
+df.figure5 <- filter(df.figure5, country.n > 0)
+
+ggplot(df.figure5) +
+  geom_histogram(aes(x = country.n, color = cits.pubs.refs, fill = cits.pubs.refs), position = 'identity', alpha=0.6) +
+  theme_minimal() +
+  facet_wrap(~cits.pubs.refs) +
+  xlab("Country count") +
+  ylab("Journal count")
+ggsave("~/Desktop/Local.Research/Figure5.jpg")
