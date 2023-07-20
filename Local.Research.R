@@ -342,3 +342,15 @@ ggplot(df.figure5) +
   xlab("Country count") +
   ylab("Journal count")
 ggsave("~/Desktop/Local.Research/Figure5.jpg")
+
+
+
+# DESARROLLAR ESTRATEGIA PARA ENCONTRAR EL PUNTO DE CORTE EN LA CANTIDAD MÍNIMA DE PUBLICACIONES POR REVISTA
+pubs.totalsA <- pubs.totals %>%
+  group_by(pubs.n) %>%
+  summarise(count = n(),.groups = 'drop') %>%
+  as.data.frame()
+
+pubs.totalsA$proportion <- (pubs.totalsA$count * 100) / 36482
+pubs.totalsA$cumulative.prop <- cumsum(pubs.totalsA$proportion)
+write.csv2(pubs.totalsA, file = "~/Desktop/Local.Research/pubs.totalsA.csv")
